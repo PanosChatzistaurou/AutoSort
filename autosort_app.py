@@ -21,6 +21,32 @@ COLOR_TEXT_WHITE = "#FFFFFF"
 COLOR_TEXT_GREY = "#A0A0A0"
 COLOR_CARD_BG = "#2B2B2B"
 
+class ToolTip:
+    def __init__(self, widget, text):
+        self.widget = widget
+        self.text = text
+        self.tooltip_window = None
+        self.widget.bind("<Enter>", self.show_tooltip)
+        self.widget.bind("<Leave>", self.hide_tooltip)
+
+    def show_tooltip(self, event=None):
+        x, y, cx, cy = self.widget.bbox("insert")
+        x += self.widget.winfo_rootx() + 25
+        y += self.widget.winfo_rooty() + 20
+        self.tooltip_window = tw = ctk.CTkToplevel(self.widget)
+        tw.wm_overrideredirect(True)
+        tw.wm_geometry(f"+{x}+{y}")
+
+        tw.attributes("-topmost", True)
+        
+        label = ctk.CTkLabel(tw, text=self.text, justify="left", fg_color="#2B2B2B", text_color="white", corner_radius=6, padx=10, pady=5)
+        label.pack()
+
+    def hide_tooltip(self, event=None):
+        if self.tooltip_window:
+            self.tooltip_window.destroy()
+            self.tooltip_window = None
+
 class AutoSortApp(ctk.CTk):
     def __init__(self):
         # initializing the window
@@ -75,15 +101,31 @@ class AutoSortApp(ctk.CTk):
             chk.pack(pady=5, anchor="w")
             chk.select() 
 
-        ctk.CTkLabel(self.tab_smart, text="SEMANTIC TAGS:", font=("Helvetica", 11, "bold"), text_color="gray").pack(pady=(10, 5), anchor="w")
+        # semantic tags ui
+        tag_lbl_frame = ctk.CTkFrame(self.tab_smart, fg_color="transparent")
+        tag_lbl_frame.pack(pady=(10, 5), anchor="w")
         
-        # entry for the custom tags
+        ctk.CTkLabel(tag_lbl_frame, text="SEMANTIC TAGS:", font=("Helvetica", 11, "bold"), text_color="gray").pack(side="left")
+        
+        tag_info = ctk.CTkLabel(tag_lbl_frame, text=" ⓘ ", font=("Helvetica", 14), text_color=COLOR_ACCENT, cursor="hand2")
+        tag_info.pack(side="left", padx=(5, 0))
+        
+        ToolTip(tag_info, "Type comma-separated tags.\n\nSupported Aliases bypass AI (faster):\nvideos, movies, apps, zips, pics, photos,\npictures, music, docs, scripts.\n\nUnmatched tags trigger AI document scanning.")
+
         self.entry_tags = ctk.CTkEntry(self.tab_smart, placeholder_text="e.g. Invoice, Vacation", height=35)
         self.entry_tags.pack(pady=(0, 15), fill="x")
         
-        ctk.CTkLabel(self.tab_smart, text="AI CONFIDENCE THRESHOLD:", font=("Helvetica", 11, "bold"), text_color="gray").pack(pady=(10, 5), anchor="w")
+        # threshold ui
+        thresh_lbl_frame = ctk.CTkFrame(self.tab_smart, fg_color="transparent")
+        thresh_lbl_frame.pack(pady=(10, 5), anchor="w")
         
-        # the threshold determines how sure the AI must be before it's allowed to move a file
+        ctk.CTkLabel(thresh_lbl_frame, text="AI CONFIDENCE THRESHOLD:", font=("Helvetica", 11, "bold"), text_color="gray").pack(side="left")
+        
+        thresh_info = ctk.CTkLabel(thresh_lbl_frame, text=" ⓘ ", font=("Helvetica", 14), text_color=COLOR_ACCENT, cursor="hand2")
+        thresh_info.pack(side="left", padx=(5, 0))
+        
+        ToolTip(thresh_info, "Minimum certainty required for AI categorization.\n\nHigh (70+%): Strict sorting, more files left as 'Others'.\nLow (25-%): Broad sorting, higher risk of misclassification.")
+
         self.slider_val = ctk.StringVar(value="30%")
         self.slider_label = ctk.CTkLabel(self.tab_smart, textvariable=self.slider_val, font=("Helvetica", 11), text_color="white")
         self.slider_label.pack(anchor="e", padx=5)

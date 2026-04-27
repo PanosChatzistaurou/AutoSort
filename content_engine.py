@@ -16,14 +16,16 @@ def init_nlp_model():
     global classifier
     if classifier is None:
         try:
-            # I load this globally so I don't have to boot the heavy model for every single file
-            classifier = pipeline(
-                "zero-shot-classification", 
-                model="./local_nlp_model" 
-            )
-        except Exception as e:
-            print(f"Failed to load local model: {e}")
+            if getattr(sys, 'frozen', False):
+                base_path = os.path.dirname(sys.executable)
+            else:
+                base_path = os.path.dirname(os.path.abspath(__file__))
+            
+            model_path = os.path.join(base_path, "local_nlp_model")
 
+            classifier = pipeline("zero-shot-classification", model=model_path)
+        except Exception:
+            pass
 def get_tesseract_cmd():
     # packaging to an exe breaks standard paths, so i have to dynamically find where the ocr tool is hidden
     if getattr(sys, 'frozen', False):
