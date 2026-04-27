@@ -3,7 +3,8 @@ import os
 from pathlib import Path
 
 def get_safe_destination(target_path: Path) -> Path:
-    # I do this so I don't accidentally overwrite files if two things share the same name
+    
+    # I do this so the program doesn't accidentally overwrite files if two share the same name
     if not target_path.exists():
         return target_path
 
@@ -12,7 +13,7 @@ def get_safe_destination(target_path: Path) -> Path:
     parent = target_path.parent
     counter = 1
     
-    # i just keep incrementing a number at the end of the filename until we find an empty slot
+    # i just keep incrementing a number at the end of the filename until an empty slot is found
     while True:
         new_name = f"{stem}_{counter}{suffix}"
         new_path = parent / new_name
@@ -21,12 +22,13 @@ def get_safe_destination(target_path: Path) -> Path:
         counter += 1
 
 def clean_empty_folders(path: Path):
+    
     # moving files leaves behind a mess of empty directories, so I clean them up to keep the filesystem tidy
     for dirpath, dirnames, filenames in os.walk(path, topdown=False):
         current_dir = Path(dirpath)
         if current_dir != path: 
             try:
-                # I ignore errors here because the os yells at us if we try to delete a folder that still has hidden stuff in it
+                # I ignore errors here because the os sometimes throws unecessary errors if we try to delete a folder that still has hidden stuff in it
                 current_dir.rmdir()
             except OSError:
                 pass 

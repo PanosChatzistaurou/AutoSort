@@ -30,7 +30,6 @@ class AutoSortApp(ctk.CTk):
         self.geometry("1150x780")
         self.minsize(1150, 780)       
         self.resizable(False, False)  
-
     
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -39,9 +38,10 @@ class AutoSortApp(ctk.CTk):
         self.file_map = {} 
         self.selected_folder = None
 
-        # loading the npl model in a daemon thread to prevent freezing on launch
+        # loading the npl model in a daemon thread to prevent gui from freezing on start up
         threading.Thread(target=content_engine.init_nlp_model, daemon=True).start()
-
+        
+        # constructing the sadbar ui
         self.sidebar = ctk.CTkFrame(self, width=300, corner_radius=0, fg_color=COLOR_SIDEBAR)
         self.sidebar.grid(row=0, column=0, sticky="nsew")
         self.sidebar.grid_rowconfigure(5, weight=1)
@@ -53,7 +53,7 @@ class AutoSortApp(ctk.CTk):
         self.btn_select = ctk.CTkButton(self.sidebar, text="📂 Select Folder", command=self.select_folder, fg_color=COLOR_MAIN_BG, border_width=1, border_color="gray30", height=40)
         self.btn_select.grid(row=2, column=0, padx=20, pady=10, sticky="ew")
 
-        # tavs to separate simple and smart mode
+        # tabs to separate simple and smart mode
         self.tab_view = ctk.CTkTabview(self.sidebar, width=250, height=400, fg_color=COLOR_SIDEBAR, segmented_button_fg_color=COLOR_MAIN_BG, segmented_button_selected_color=COLOR_ACCENT, segmented_button_selected_hover_color=COLOR_ACCENT, segmented_button_unselected_color=COLOR_MAIN_BG)
         self.tab_view.grid(row=3, column=0, padx=15, pady=20, sticky="nsew")
         
@@ -171,13 +171,13 @@ class AutoSortApp(ctk.CTk):
     def start_thread(self):
         self.btn_start.configure(state="disabled", text="PROCESSING...")
         self.progress_bar.set(0)
-        # processing must be threaded so the GUI remains responsive and the progress bar updates in real time
+        # processing must be threaded so the gui remains responsive and the progress bar updates in real time
         threading.Thread(target=self.run_logic, daemon=True).start()
 
     def update_status(self, file_path, dest_folder, status_text):
         item_id = self.file_map.get(str(file_path))
         if item_id:
-            # tkinter isnt thread-safe, so i schedule UI updates to run on the main thread
+            # tkinter isnt thread-safe, so i schedule ui updates to run on the main thread
             self.after(0, lambda: self._apply_update(item_id, dest_folder, status_text))
     
     def _apply_update(self, item_id, dest_folder, status_text):
