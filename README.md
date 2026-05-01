@@ -11,6 +11,7 @@ The source code in this repository cannot be run directly. Use the pre-compiled 
     Run: Execute the file from that directory.
 
 Required Directory Structure
+```text
 .
 ├── autosort_app.exe
 └── local_nlp_model/
